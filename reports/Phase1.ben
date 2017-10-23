@@ -1,0 +1,59 @@
+Ben Andrews
+Phase1
+Part 2 - Process and Thread Synchronization
+10-15-2017
+
+Red Hat Enterprise Linux is a commercial Linux Distribition. Linux supports threads by treating them as any other process. Linux uses 'task' as a general term to refer to processes and threads. Since version 2.6 the Linux kernel has been preemptive, which means it needs a synchronization mechanism. There are two cases when synchronization is needed, for critical code sections during normal kernel activity, and critical sections during interrupt handling.
+For critical sections during normal kernel activities synchronization, Linux provides short term and long term locking strategies. On SMP systems Linux uses Spin Locks for its short term locks, and for single processor machines it replaces spinlocks with turning preemption on and off. For locks that need to be held for a longer term, Semaphores are used to lock critical sections of code. 
+For critical sections during interrupt handling activities synchronization, interrupts need to be prevented from entering critical sections being used by on going interrupts. The primitive way to do this is to take advantage of a processor’s interrupt disabling features. However, this is not free. While interrupts are disabled all I/O is disabled, all devices are left stranded, and performance takes a turn for the worse. To prevent this, Linux uses a special synchronization strategy, by putting interrupt routines into two sections.
+These sections are called the top half and the bottom half. Interrupt services in the top half have a number, and all other interrupt services that share than number are disabled, but all others stay enabled. The interrupt services that run in the bottom half run with all interrupts enabled. To keep synchronization there is a mini scheduler that runs the bottom half that make sure all the services running in the bottom half do not interrupt each other. Some bottom half services are disabled while foreground kernel code is running, which allows the foreground code to keep its critical sections safe.
+
+Spin Locks: 
+// derived from /include/linux/spinlock.h
+void spinlock(lock_t *lock)                   
+{                                                                       
+        for (;;) 
+		{                                                      
+                preempt_disable();
+				
+                if (can_aquire(lock))                
+                    break_out_of_for_loop;
+					
+                preempt_enable();                                       
+                
+                if (!lock->break_lock)                                
+                    lock->break_lock = 1;      
+						
+                while (can_get_lock(lock) && lock->break_lock)
+                    ;             
+        }                                                               
+        lock->break_lock = 0;                                         
+}        
+
+Semaphore Locks:
+// derived from /include/linux/semaphore.h
+void sema_init(struct semaphore *sem, int val)
+{
+       struct lock_class_key key;
+       *sem = initialize_semaphore(*sem, val);
+}
+
+// derived from kernel/locking/semaphore.c
+void down(struct semaphore *sem)
+{
+        spinlock(&sem->lock);
+		
+        if (sem->count > 0)
+            sem->count--;
+        else
+            down(sem); // wait
+}
+
+// derived from /include/linux/semaphore.h
+void up(struct semaphore *sem)
+{
+        if (list_empty(&sem->wait_list))
+            sem->count++;
+        else
+            up(sem); // let the first waiting task exit its wait
+}
