@@ -2,7 +2,8 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.Queue;
 
 // Thanks to https://www.mkyong.com/java/how-to-read-and-parse-csv-file-in-java/
 
@@ -44,9 +45,9 @@ public class CSV {
 	private static String splitChar = ",";
 	private static String processInfo = "";
 	
-	public static ArrayList<Process> parseProcessCSV(String filepath) 
+	public static Queue<Process> parseProcessCSV(String filepath) 
 	{
-		ArrayList<Process> returnList = new ArrayList<Process>();
+		Queue<Process> returnList = new LinkedList<Process>();
 		Process buildProcess = null;
 		
 		boolean build_cpuBurst = true;
