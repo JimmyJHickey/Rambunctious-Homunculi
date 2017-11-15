@@ -3,7 +3,7 @@ package MemoryManagement;
 	//page structure
 
 public class Page {
-	private int size = 255;
+	private int size = 4096;
 	public int pageNumber;
 	public byte [] data = new byte [size];
 	
