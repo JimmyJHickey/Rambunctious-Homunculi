@@ -23,6 +23,7 @@ public class PageTableTest {
 	
 	public static void main(String[] args){
 		
+		System.out.println("True = good False = bad");
 		boolean yes = Insert_ReturnsValue_InsertsIntoPageTable();
 		System.out.println(yes);
 	}
