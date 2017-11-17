@@ -16,9 +16,9 @@ public class CompletelyFairScheduler
 		minGran = mg;
 	}
 	
-	public void schedOther(Process proc)
+	public void schedOther(SchedEntity sched)
 	{
-		rbTree.put(proc.name, new SchedEntity(proc));
+		rbTree.put(sched.process.name, sched);
 	}
 	
 	public SchedEntity pickNextTask()

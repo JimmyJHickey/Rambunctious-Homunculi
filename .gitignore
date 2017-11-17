@@ -3,3 +3,6 @@
 .project
 .DS_Store
 .settings/
+
+data/.~*#
+
