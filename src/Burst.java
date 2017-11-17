@@ -1,10 +1,10 @@
 
 public class Burst 
 {
-	private boolean cpuBurst;
-	private boolean criticalSection;
-	private char lock;
-	private int length;
+	public boolean cpuBurst;
+	public boolean criticalSection;
+	public char lock;
+	public int length;
 	
 	public Burst(boolean cpu, boolean crit, char lck, int lngth) 
 	{
