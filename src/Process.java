@@ -18,8 +18,4 @@ public class Process
 	{
 		
 	}
-	
-	public void saveToMem(){
-		
-	}
 }
