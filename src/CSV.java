@@ -2,15 +2,14 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.LinkedList;
-import java.util.Queue;
+import java.util.ArrayList;
 
 // Thanks to https://www.mkyong.com/java/how-to-read-and-parse-csv-file-in-java/
 
 /*
  * Process Structure
- * Process Name, Number, Arrival Time, Priority, Memory Required, Bursts
- * P1,           5,      2,            99,       64,              <Bursts>
+ * Process Name, Number, Arrival Time, Priority, niceness, Memory Required (bytes), Bursts
+ * P1,           5,      2,            99,       0,        64,                      <Bursts>
  * 
  * Burst Structure
  * Type, Time
@@ -29,8 +28,9 @@ public class CSV {
 	final private static int NUMBER_INDEX = 1;
 	final private static int ARRIVAL_TIME_INDEX = 2;
 	final private static int PRIORITY_INDEX = 3;
-	final private static int MEMORY_INDEX = 4;
-	final private static int BURST_START_INDEX = 5;
+	final private static int NICENESS_INDEX = 4;
+	final private static int MEMORY_INDEX = 5;
+	final private static int BURST_START_INDEX = 6;
 	
 	final private static int CPU_IO_BURST_SIZE = 2;
 	final private static int CPU_IO_TIME_OFFSET = 1;
@@ -45,9 +45,9 @@ public class CSV {
 	private static String splitChar = ",";
 	private static String processInfo = "";
 	
-	public static Queue<Process> parseProcessCSV(String filepath) 
+	public static ArrayList<Process> parseProcessCSV(String filepath) 
 	{
-		Queue<Process> returnList = new LinkedList<Process>();
+		ArrayList<Process> returnList = new ArrayList<Process>();
 		Process buildProcess = null;
 		
 		boolean build_cpuBurst = true;
@@ -69,13 +69,15 @@ public class CSV {
 				buildProcess.name = processArr[NAME_INDEX];
 				buildProcess.number = Integer.parseInt(processArr[NUMBER_INDEX]);
 				buildProcess.arrivalTime = Integer.parseInt(processArr[ARRIVAL_TIME_INDEX]);
-				buildProcess.priority = Integer.parseInt(processArr[PRIORITY_INDEX]);				
+				buildProcess.priority = Integer.parseInt(processArr[PRIORITY_INDEX]);	
+				buildProcess.niceness = Integer.parseInt(processArr[NICENESS_INDEX]);
 				buildProcess.memory = Integer.parseInt(processArr[MEMORY_INDEX]);
 				
 				processInfo += String.format("Name: %s ", buildProcess.name);
 				processInfo += String.format("Number: %d ", buildProcess.number);
 				processInfo += String.format("Arrival Time: %d ", buildProcess.arrivalTime);
 				processInfo += String.format("Priority: %d ", buildProcess.priority);
+				processInfo += String.format("Niceness: %d ", buildProcess.niceness);
 				processInfo += String.format("Memory: %d\n", buildProcess.memory);
 				
 				int i = BURST_START_INDEX;
