@@ -1,6 +1,9 @@
 import java.util.Map.Entry;
 import java.util.TreeMap;
 
+import Process.*;
+
+
 public class CompletelyFairScheduler
 {
 	private int targetLat;

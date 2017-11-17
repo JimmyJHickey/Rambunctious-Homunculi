@@ -4,6 +4,11 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import Process.Process;
+import Process.Burst;
+import Process.SchedEntity;
+
+
 // Thanks to https://www.mkyong.com/java/how-to-read-and-parse-csv-file-in-java/
 
 /*
