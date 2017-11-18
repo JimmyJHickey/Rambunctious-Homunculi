@@ -17,35 +17,37 @@ public class Processor
 		preemptable = true;
 	}
 	
-	public boolean runProcess()
+	public void runProcess()
 	{
 		boolean done = false;
-		Burst currentBurst = runningProcess.bursts.peek();
 		
-		++runTime;
-		
-		currentBurst.length -= 1;
-		
-		// if the current CPU burst finished this tick, discard current burst, move to next one
-		if(currentBurst.length <= 0)
+		if(runningProcess != null)
 		{
-			runningProcess.bursts.remove();
+			Burst currentBurst = runningProcess.bursts.peek();
 			
-			// ugly. If the bursts are empty, the process is done
-			if(!runningProcess.bursts.isEmpty())
+			if(!currentBurst.cpuBurst) 
+				System.err.printf("if you're reading this very bad things have happened\n");
+			
+			++runTime;
+			
+			currentBurst.length--;
+			
+			// if the current CPU burst finished this tick, discard current burst, move to next one
+			if(currentBurst.length <= 0)
 			{
-				currentBurst = runningProcess.bursts.peek();
-			
-				// if the next burst is not a CPU burst, then the process in also done with the processor 
-				if(!currentBurst.cpuBurst)
+				runningProcess.bursts.remove();
+				
+				// ugly. If the bursts are empty, the process is done
+				if(!runningProcess.bursts.isEmpty())
 				{
-					done = true;
+					currentBurst = runningProcess.bursts.peek();
+				}
+				else
+				{
+					currentBurst = null;
 				}
 			}
-			else done = true;
 		}
-		
-		return done;
 	}
 	
 	public void getNewProcess(Process proc)
@@ -56,8 +58,21 @@ public class Processor
 		preemptable = !runningProcess.bursts.peek().criticalSection;
 	}
 	
+	public Process removeProcess()
+	{
+		Process returnProcess = runningProcess;
+		runningProcess = null;
+		
+		return returnProcess;
+	}
+	
 	public int getRunTime()
 	{
 		return runTime;
+	}
+	
+	public boolean hasRunningProcess()
+	{
+		return runningProcess != null;
 	}
 }

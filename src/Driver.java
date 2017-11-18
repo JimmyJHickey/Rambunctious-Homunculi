@@ -15,18 +15,21 @@ public class Driver
 	{
 		// get process list out of the csv
 		ArrayList<Process> processes = CSV.parseProcessCSV("data/processes.csv");
-		ArrayList<SchedEntity> waiting = new ArrayList<SchedEntity>();
+		ArrayList<SchedEntity> waitingIO = new ArrayList<SchedEntity>();
 		
 		// set up to run
 		int tick = 0;
-		boolean noScheduledProcesses = false;
-		CompletelyFairScheduler cfs = new CompletelyFairScheduler(MIN_GRANULARITY, TARGET_LATANCY);
+		boolean onProcessor = false;
+		CompletelyFairScheduler cfs = new CompletelyFairScheduler(TARGET_LATANCY, MIN_GRANULARITY);
 		Processor processor = new Processor();
 		SchedEntity schedEnt = null;
 		ArrayList<SchedEntity> killList = new ArrayList<SchedEntity>();
+		String printer = "";
 		
-		while(!noScheduledProcesses)
+		while(!onProcessor || !waitingIO.isEmpty() || !cfs.isEmpty())
 		{
+			System.out.printf("tick: %d\n", tick);
+			
 			// find processes to that have arrived, schedule them
 			for(Process proc:processes)
 			{
@@ -37,7 +40,7 @@ public class Driver
 			}
 			
 			// find processes in the waiting list that are done waiting, schedule them
-			for(SchedEntity se:waiting)
+			for(SchedEntity se:waitingIO)
 			{
 				if(se.process.bursts.peek().length == 0)
 				{
@@ -47,54 +50,80 @@ public class Driver
 				}
 			}
 			
-			waiting.removeAll(killList);
-			
-			if(tick == 0)
-			{
-				schedEnt = cfs.pickNextTask();
-				
-				processor.getNewProcess(schedEnt.process);
-			}
-			
-			// run the process that is on the processor
-			if(processor.runProcess())
-			{
-				// process has exited
-				if(schedEnt.process.bursts.isEmpty())
-				{
-					schedEnt = null;
-				}
-				// process is in an IO burst
-				else 
-				{
-					schedEnt.virtualRuntime += processor.getRunTime();
-					waiting.add(schedEnt);
-					
-					schedEnt = cfs.pickNextTask();
-					
-					if(schedEnt == null)
-					{
-						noScheduledProcesses = true;
-					}
-					else
-					{
-						processor.getNewProcess(schedEnt.process);
-					}
-				}
-			}
+			waitingIO.removeAll(killList);
+			killList.clear();
 			
 			// advance the time of all the io bursts in the waiting list
-			for(SchedEntity se:waiting)
+			for(SchedEntity se:waitingIO)
 			{
-				System.out.printf("Waiting Burst: Name: %s, Bursts Length: %d\n", se.process.name, se.process.bursts.size());
+				System.out.printf("Waiting Burst: Name: %s, IO Length: %d\n", se.process.name, se.process.bursts.peek().length);
 				se.process.bursts.peek().length--;
 			}
 			
-			if(!noScheduledProcesses)
-			System.out.printf("Process Running: %s\nCS: %b\nTime Remaining: %d\n\n", schedEnt.process.name, schedEnt.process.bursts.peek().criticalSection, schedEnt.process.bursts.peek().length);
+			if(!processor.hasRunningProcess()) 
+			{
+				System.out.printf("# No running process\n");
+				
+				schedEnt = cfs.pickNextTask();
+				
+				if(schedEnt != null)
+				{
+					processor.getNewProcess(schedEnt.process);
+				}
+			}
+			else if(schedEnt.process.bursts.isEmpty())
+			{
+				System.out.printf("# Process finished\n");
+				
+				processor.removeProcess();
+				schedEnt = null;
+			}
+			else if(!schedEnt.process.bursts.peek().cpuBurst)
+			{
+				System.out.printf("# Process on IO burst\n");
+				
+				processor.removeProcess();
+				schedEnt.virtualRuntime += processor.getRunTime();
+				schedEnt.process.bursts.peek().length--;
+				waitingIO.add(schedEnt);
+				schedEnt = null;
+			}
+			else if(processor.getRunTime() >= cfs.getTimeSlice())
+			{
+				System.out.printf("  Runtime: %d\n", processor.getRunTime());
+				
+				System.out.printf("# Process overstayed its visit\n");
+				
+				processor.removeProcess();
+				schedEnt.virtualRuntime += processor.getRunTime();
+				cfs.schedOther(schedEnt);
+				schedEnt = null;				
+			}
+			else
+			{
+				System.out.printf("# Running the process\n");
+				processor.runProcess();
+				
+				schedEnt.process.bursts.isEmpty();
+			}
 			
+			onProcessor = schedEnt == null;
+			
+			printer = "";
+			if(!onProcessor)
+			{
+				printer += String.format("Process Running: %s\n", schedEnt.process.name);
+				
+				if(!schedEnt.process.bursts.isEmpty())
+				{
+					printer += String.format("%s\n", schedEnt.process.bursts.peek().criticalSection ? "Critical Section" : "Not Critical Section");
+					printer += String.format("Time Remaining: %d\n", schedEnt.process.bursts.peek().length);
+				}
+				
+				System.out.printf("%s\n", printer);
+			}
 			++tick;
-		}
-		
+		} // end whil loop
+		System.out.printf("We are winner\n");
 	}
 }
