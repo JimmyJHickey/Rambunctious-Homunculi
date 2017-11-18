@@ -22,16 +22,12 @@ public class CompletelyFairScheduler
 	
 	public void schedOther(SchedEntity sched)
 	{
-		System.err.printf("added a sched\n");
 		rbTree.add(sched);
-		System.out.printf("   size: %d\n", rbTree.size());
 	}
 	
 	public SchedEntity pickNextTask()
 	{
 		SchedEntity nextTask = null;
-		
-		System.out.printf("   size: %d\n", rbTree.size());
 		
 		if(!rbTree.isEmpty())
 		{

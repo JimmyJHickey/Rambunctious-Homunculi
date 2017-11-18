@@ -122,7 +122,7 @@ public class CSV {
 							build_lock = processArr[i + CS_NAME_OFFSET].charAt(0);
 							build_length = Integer.parseInt(processArr[i + CS_TIME_OFFSET]);
 							
-							processInfo += String.format("Critical Section: %d\n", build_length);
+							processInfo += String.format("Critical Section: %d | Lock: %c\n", build_length, build_lock);
 							
 							i += CS_BURST_SIZE;
 							break;
