@@ -3,14 +3,11 @@ package MemoryManagement;
 	//page structure
 
 public class Page {
-	private int size = 4096;
+	private int size = 4096; //4kb
 	public int pageNumber;
 	public byte [] data = new byte [size];
 	
-	public Page (byte [] inData){
-		data = inData;
+	public Page (){
 		//TODO: assign pageNumber
-		//TODO: save as frame
-		//TODO: map to frame
 	}
 }
