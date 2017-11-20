@@ -15,18 +15,15 @@ public class PageTable {
 			pageTable[i] = false;
 		}
 	}
-	public boolean memSpaceCheck(int pageAmt){
+	public int availableMem(){
+		int availablePages = 0;
 		for(int j = 0; j < pageTable.length; j++){
 			if (pageTable[j] = false){
-				pageAmt --;
+				availablePages++;
 			}
 		}
 		
-		if (pageAmt <= 0){
-			return true;
-		}else{
-			return false;
-		}
+		return availablePages;
 	}
 	
 	public int insert() {
