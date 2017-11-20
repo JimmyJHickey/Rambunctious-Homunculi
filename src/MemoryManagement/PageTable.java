@@ -15,20 +15,30 @@ public class PageTable {
 			pageTable[i] = false;
 		}
 	}
+	public boolean memSpaceCheck(int pageAmt){
+		for(int j = 0; j < pageTable.length; j++){
+			if (pageTable[j] = false){
+				pageAmt --;
+			}
+		}
+		
+		if (pageAmt <= 0){
+			return true;
+		}else{
+			return false;
+		}
+	}
 	
-	public Page insert() {
-		//TODO: map logical address to physical address
+	public int insert() {
 		
 		for (int i = 0; i < pageTable.length; i++){
 			
 			if (!pageTable[i]){
 				pageTable[i]= true;
-				Page page = new Page();
-				page.pageNumber = i;
-				return page;
+				return i;
 			}
 		}
-		
+		return -1;
 		
 	}// insert
 	

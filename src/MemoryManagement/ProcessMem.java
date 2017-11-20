@@ -10,16 +10,21 @@ public class ProcessMem {
 		pageTable = new PageTable(memSize);
 	}
 	
-	public Page[] save(Process process){
+	public Page[] save(Process process){ // returns list of pages or empty list if no memory space
 		
 		int pageAmt = (process.memory * 1000)/4;
-		Page[] page = new Page[pageAmt];
-		
-		for (int i = 0; i < pageAmt; i++){
-			page[i] = pageTable.insert();
+		if (pageTable.memSpaceCheck(pageAmt)){
+			Page[] page = new Page[pageAmt];
+			
+			for (int i = 0; i < pageAmt; i++){
+				page[i].pageNumber = pageTable.insert();
+			}
+			
+			return page;
+		}else{
+			return new Page[0];
 		}
 		
-		return page;
 	}
 	
 }
