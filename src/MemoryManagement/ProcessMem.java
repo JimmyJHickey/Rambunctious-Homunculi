@@ -1,9 +1,11 @@
 package MemoryManagement;
 
+import Process.Process;;
+
 public class ProcessMem {
 	
 	public void save(Process process){
-		int size = Process.memory;
+		int size = process.memory;
 	}
 	
 }
