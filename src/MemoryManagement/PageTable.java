@@ -39,6 +39,10 @@ public class PageTable {
 		
 	}// insert
 	
+	public void remove(int i) {
+		pageTable[i]= false;
+	}// remove
+	
 	public boolean get(int pageNumber){
 		return pageTable[pageNumber];
 	}//get

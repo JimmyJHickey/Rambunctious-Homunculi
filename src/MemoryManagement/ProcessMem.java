@@ -39,6 +39,12 @@ public class ProcessMem {
 	
 	public void unload(Process process){
 		
+		int pageAmt = (process.memory * 1000)/4;
+		
+		for (int i = 0; i < pageAmt; i++){
+			Page page = process.pages.get(i);
+			pageTable.remove(page.pageNumber);
+		}
 	}
 	
 }
