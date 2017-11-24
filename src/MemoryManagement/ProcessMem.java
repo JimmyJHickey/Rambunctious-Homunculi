@@ -1,5 +1,7 @@
 package MemoryManagement;
 
+import java.util.ArrayList;
+
 import Process.Process;;
 
 public class ProcessMem {
@@ -15,19 +17,22 @@ public class ProcessMem {
 		return (pages * 4)/1000; //return available memory in MB
 	}
 	
-	public Page[] load(Process process){ // returns list of pages or empty list if no memory space
+	public Process load(Process process){ // returns list of pages or empty list if no memory space
 		
 		int pageAmt = (process.memory * 1000)/4;
 		if (pageAmt <= pageTable.availableMem()){
-			Page[] page = new Page[pageAmt];
+			ArrayList<Page> pageList = new ArrayList<Page>();
+			Page page = new Page();
 			
 			for (int i = 0; i < pageAmt; i++){
-				page[i].pageNumber = pageTable.insert();
+				page.pageNumber = pageTable.insert();
+				pageList.add(page);
 			}
 			
-			return page;
+			process.pages = pageList;
+			return process;
 		}else{
-			return new Page[0];
+			return process;
 		}
 		
 	}
