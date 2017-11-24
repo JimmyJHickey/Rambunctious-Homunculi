@@ -15,7 +15,7 @@ public class ProcessMem {
 		return (pages * 4)/1000; //return available memory in MB
 	}
 	
-	public Page[] save(Process process){ // returns list of pages or empty list if no memory space
+	public Page[] load(Process process){ // returns list of pages or empty list if no memory space
 		
 		int pageAmt = (process.memory * 1000)/4;
 		if (pageAmt <= pageTable.availableMem()){
@@ -29,6 +29,10 @@ public class ProcessMem {
 		}else{
 			return new Page[0];
 		}
+		
+	}
+	
+	public void unload(Process process){
 		
 	}
 	
