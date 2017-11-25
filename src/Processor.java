@@ -37,7 +37,6 @@ public class Processor
 				System.err.printf("if you're reading this very bad things have happened\n");
 			
 			++runTime;
-			
 			currentBurst.length--;
 			
 			// if the current CPU burst finished this tick, discard current burst, move to next one
@@ -45,7 +44,7 @@ public class Processor
 			{
 				preemptable = true;
 				
-				// if the burst was a critical section
+				// if the burst was a critical section with a wait queue
 				if(currentBurst.criticalSection && lockman.waitQueues.containsKey(currentBurst.lock))
 				{
 					tempEntity = lockman.waitQueues.get(currentBurst.lock).poll();
@@ -60,7 +59,6 @@ public class Processor
 				{
 					currentBurst = runningProcess.bursts.peek();
 					
-					criticalSection:
 					if(currentBurst.criticalSection)
 					{
 						// if no one currently owns the lock
@@ -69,7 +67,6 @@ public class Processor
 							if(currentBurst.length <= 2)
 							{
 								preemptable = false;
-								break criticalSection;
 							}
 						}
 						else
@@ -92,6 +89,8 @@ public class Processor
 	{
 		runningProcess = proc;
 		runTime = 0;
+		
+		preemptable = !runningProcess.bursts.peek().criticalSection;
 	}
 	
 	public boolean removeProcess()

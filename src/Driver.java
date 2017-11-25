@@ -85,7 +85,6 @@ public class Driver
 					
 					if(schedEnt != null)
 					{
-						
 						if((runnableProcess = schedEnt.process.runnable))
 						{
 							processor.getNewProcess(schedEnt.process);
@@ -96,7 +95,6 @@ public class Driver
 							killList.add(schedEnt);
 							
 							System.out.printf("\nprocess %s not runnable...", schedEnt.process.name);
-							System.err.printf("######################\n");
 						}
 					}
 					else 
@@ -182,6 +180,7 @@ public class Driver
 			{
 				lockedCriticalSection = processor.runProcess();
 			}
+			
 			
 			printer = "";
 			if(processor.hasRunningProcess())
