@@ -1,8 +1,11 @@
 import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.Queue;
 
 import Process.Process;
 import Process.Burst;
 import Process.SchedEntity;
+
 
 
 public class Driver 
@@ -14,16 +17,21 @@ public class Driver
 	public static void main(String args[])
 	{
 		// get process list out of the csv
-		ArrayList<Process> processes = CSV.parseProcessCSV("data/processes.csv");
+		ArrayList<Process> processes = CSV.parseProcessCSV("data/processes1.csv");
 		ArrayList<SchedEntity> waitingIO = new ArrayList<SchedEntity>();
 		
 		// set up to run
 		int tick = 0;
+		LockManager lckmgr = new LockManager();
 		CompletelyFairScheduler cfs = new CompletelyFairScheduler(TARGET_LATANCY, MIN_GRANULARITY);
-		Processor processor = new Processor();
+		Processor processor = new Processor(lckmgr);
 		SchedEntity schedEnt = null;
 		ArrayList<SchedEntity> killList = new ArrayList<SchedEntity>();
+		boolean lockedCriticalSection = false;
+		boolean runnableProcess = false;
 		String printer = "";
+		
+		int i = 0;
 		
 		do 
 		{
@@ -64,19 +72,72 @@ public class Driver
 				System.out.printf("%s waiting for %d more ticks\n", se.process.name, se.process.bursts.peek().length);
 			}
 			
+			
 			if(!processor.hasRunningProcess()) 
 			{
 				System.out.printf("No process running...");
 				
-				schedEnt = cfs.pickNextTask();
+				runnableProcess = false;
 				
-				if(schedEnt != null)
+				while(!runnableProcess)
 				{
-					processor.getNewProcess(schedEnt.process);
+					schedEnt = cfs.pickNextTask();
 					
-					System.out.printf("put %s on the processor\n", schedEnt.process.name);
+					if(schedEnt != null)
+					{
+						
+						if((runnableProcess = schedEnt.process.runnable))
+						{
+							processor.getNewProcess(schedEnt.process);
+							System.out.printf("put %s on the processor\n", schedEnt.process.name);
+						}
+						else
+						{
+							killList.add(schedEnt);
+							
+							System.out.printf("\nprocess %s not runnable...", schedEnt.process.name);
+							System.err.printf("######################\n");
+						}
+					}
+					else 
+					{
+						System.out.printf("no process ready to be put on the processor\n");
+						break;
+					}
 				}
-				else System.out.printf("no process ready to be put on the processor\n");
+				
+				for(SchedEntity se:killList)
+				{
+					cfs.schedOther(se);
+				}
+				killList.clear();
+				
+			}
+			else if(lockedCriticalSection)
+			{
+				System.out.printf("Process tried to enter a locked critical section...");
+				processor.removeProcess();
+				
+				// if the wait queue for this lock does not exist
+				if(!lckmgr.waitQueues.containsKey(schedEnt.process.bursts.peek().lock))
+				{
+					// create it
+					lckmgr.waitQueues.put(new Character(schedEnt.process.bursts.peek().lock), new LinkedList<SchedEntity>());
+				}
+				
+				// add the schedentity to the appropriate wait queue
+				lckmgr.waitQueues.get(schedEnt.process.bursts.peek().lock).add(schedEnt);
+				
+				// set the process to not runnable
+				schedEnt.process.runnable = false;
+				
+				// add the schedentity back into the schedule tree
+				cfs.schedOther(schedEnt);
+				
+				lockedCriticalSection = false;
+				
+				System.out.printf("put in waiting queue '%c'\n", schedEnt.process.bursts.peek().lock);
+				schedEnt = null;
 			}
 			else if(schedEnt.process.bursts.isEmpty())
 			{
@@ -103,18 +164,23 @@ public class Driver
 			{
 				System.out.printf("%s overstayed its visit...", schedEnt.process.name);
 				
-				processor.removeProcess();
-				schedEnt.virtualRuntime += processor.getRunTime();
-				cfs.schedOther(schedEnt);
-				schedEnt = null;			
-				
-				System.out.printf("put back in scheduling tree\n");
+				if(processor.removeProcess())
+				{
+					schedEnt.virtualRuntime += processor.getRunTime();
+					cfs.schedOther(schedEnt);
+					schedEnt = null;
+					
+					System.out.printf("put back in scheduling tree\n");
+				}
+				else 
+				{
+					System.out.printf("CPU currently unpreemptable...running process\n");		
+					processor.runProcess();
+				}
 			}
 			else
 			{
-				processor.runProcess();
-				
-				schedEnt.process.bursts.isEmpty();
+				lockedCriticalSection = processor.runProcess();
 			}
 			
 			printer = "";
@@ -138,7 +204,7 @@ public class Driver
 			System.out.printf("%s\n", printer);
 			
 			++tick;
-		} while(processor.hasRunningProcess() || !waitingIO.isEmpty() || !cfs.isEmpty());
+		} while(  (processor.hasRunningProcess() || !waitingIO.isEmpty() || !cfs.isEmpty()) /*&& i++ < 100*/);
 		
 		System.out.printf("We are winner\n");
 	}

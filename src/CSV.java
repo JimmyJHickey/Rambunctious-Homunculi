@@ -44,7 +44,7 @@ public class CSV {
 	final private static int CS_NAME_OFFSET = 1;
 	final private static int CS_TIME_OFFSET = 2;
 	
-	private static String csvFile = "data/processes.csv";
+	private static String csvFile = "data/processes0.csv";
 	private static BufferedReader br = null;
 	private static String line = "";
 	private static String splitChar = ",";
@@ -62,7 +62,7 @@ public class CSV {
 		
 		try 
 		{
-			br = new BufferedReader(new FileReader(csvFile));
+			br = new BufferedReader(new FileReader(filepath));
 			
 			while((line = br.readLine()) != null ) 
 			{

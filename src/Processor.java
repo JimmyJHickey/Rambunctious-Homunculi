@@ -1,25 +1,33 @@
 import Process.Process;
+
+import java.util.LinkedList;
+import java.util.Queue;
+
 import Process.Burst;
 import Process.SchedEntity;
 
 
 public class Processor
 {	
+	private LockManager lockman;
 	private Process runningProcess;
 	private boolean processDone;
 	private boolean preemptable;
 	private int runTime;
 	
-	public Processor()
+	private SchedEntity tempEntity;
+	
+	public Processor(LockManager lm)
 	{
+		lockman = lm;
 		runningProcess = null;
 		processDone = false;
 		preemptable = true;
 	}
 	
-	public void runProcess()
+	public boolean runProcess()
 	{
-		boolean done = false;
+		boolean lockedCritSection = false;
 		
 		if(runningProcess != null)
 		{
@@ -35,12 +43,40 @@ public class Processor
 			// if the current CPU burst finished this tick, discard current burst, move to next one
 			if(currentBurst.length <= 0)
 			{
+				preemptable = true;
+				
+				// if the burst was a critical section
+				if(currentBurst.criticalSection && lockman.waitQueues.containsKey(currentBurst.lock))
+				{
+					tempEntity = lockman.waitQueues.get(currentBurst.lock).poll();
+					
+					if(tempEntity != null) tempEntity.process.runnable = true;
+				}
+				
 				runningProcess.bursts.remove();
 				
-				// ugly. If the bursts are empty, the process is done
+				// if the bursts are empty, the process is done
 				if(!runningProcess.bursts.isEmpty())
 				{
 					currentBurst = runningProcess.bursts.peek();
+					
+					criticalSection:
+					if(currentBurst.criticalSection)
+					{
+						// if no one currently owns the lock
+						if(!lockman.waitQueues.containsKey(currentBurst.lock))
+						{
+							if(currentBurst.length <= 2)
+							{
+								preemptable = false;
+								break criticalSection;
+							}
+						}
+						else
+						{
+							lockedCritSection = true;
+						}
+					}
 				}
 				else
 				{
@@ -48,22 +84,25 @@ public class Processor
 				}
 			}
 		}
+		
+		return lockedCritSection;
 	}
 	
 	public void getNewProcess(Process proc)
 	{
 		runningProcess = proc;
 		runTime = 0;
-		
-		preemptable = !runningProcess.bursts.peek().criticalSection;
 	}
 	
-	public Process removeProcess()
+	public boolean removeProcess()
 	{
-		Process returnProcess = runningProcess;
-		runningProcess = null;
+		if(preemptable)
+		{
+			runningProcess = null;
+		}
 		
-		return returnProcess;
+		return preemptable;
+		
 	}
 	
 	public int getRunTime()
