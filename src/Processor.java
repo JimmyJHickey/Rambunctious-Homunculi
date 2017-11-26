@@ -36,6 +36,7 @@ public class Processor
 			if(!currentBurst.cpuBurst) 
 				System.err.printf("if you're reading this very bad things have happened\n");
 			
+			// advance time 1 tick
 			++runTime;
 			currentBurst.length--;
 			
@@ -47,6 +48,7 @@ public class Processor
 				// if the burst was a critical section with a wait queue
 				if(currentBurst.criticalSection && lockman.waitQueues.containsKey(currentBurst.lock))
 				{
+					// pop a process out of the wait queue
 					tempEntity = lockman.waitQueues.get(currentBurst.lock).poll();
 					
 					if(tempEntity != null) 
@@ -55,6 +57,7 @@ public class Processor
 					}
 					else
 					{
+						// if there isn't a process waiting for the lock, remove the wait queue
 						lockman.waitQueues.remove(currentBurst.lock);
 					}
 				}
@@ -71,12 +74,14 @@ public class Processor
 						// if no one currently owns the lock
 						if(!lockman.waitQueues.containsKey(currentBurst.lock))
 						{
+							// if the crit section is too short to be preempted
 							if(currentBurst.length <= 2)
 							{
 								preemptable = false;
 							}
 							else
 							{
+								// create a wait queue for this lock
 								lockman.waitQueues.put(new Character(currentBurst.lock), new LinkedList<SchedEntity>());
 							}							
 						}
@@ -101,11 +106,13 @@ public class Processor
 		runningProcess = proc;
 		runTime = 0;
 		
+		// if the process is a critical section and it is too short to be preempted, turn preemption off
 		preemptable = !(runningProcess.bursts.peek().criticalSection && runningProcess.bursts.peek().length <= 2);
 	}
 	
 	public boolean removeProcess()
 	{
+		// remove the process iff the processor can be preempted
 		if(preemptable)
 		{
 			runningProcess = null;
@@ -115,6 +122,7 @@ public class Processor
 		
 	}
 	
+	// get the time the current process spent on the processor
 	public int getRunTime()
 	{
 		return runTime;
