@@ -113,7 +113,7 @@ public class Driver
 			}
 			else if(lockedCriticalSection)
 			{
-				System.out.printf("Process tried to enter a locked critical section...");
+				System.out.printf("Process %s tried to enter a locked critical section...", schedEnt.process.name);
 				processor.removeProcess();
 				
 				// if the wait queue for this lock does not exist
@@ -162,17 +162,27 @@ public class Driver
 			{
 				System.out.printf("%s overstayed its visit...", schedEnt.process.name);
 				
-				if(processor.removeProcess())
+				runnableProcess = false;
+				
+				if(cfs.hasRunnableProcess())
 				{
-					schedEnt.virtualRuntime += processor.getRunTime();
-					cfs.schedOther(schedEnt);
-					schedEnt = null;
-					
-					System.out.printf("put back in scheduling tree\n");
+					if(processor.removeProcess())
+					{
+						schedEnt.virtualRuntime += processor.getRunTime();
+						cfs.schedOther(schedEnt);
+						schedEnt = null;
+						
+						System.out.printf("put back in scheduling tree\n");
+					}
+					else 
+					{
+						System.out.printf("CPU currently unpreemptable...running process\n");		
+						processor.runProcess();
+					}
 				}
-				else 
+				else
 				{
-					System.out.printf("CPU currently unpreemptable...running process\n");		
+					System.out.printf("no runnable processes in the tree...running process\n");
 					processor.runProcess();
 				}
 			}
@@ -202,8 +212,8 @@ public class Driver
 			
 			System.out.printf("%s\n", printer);
 			
-			++tick;
-		} while(  (processor.hasRunningProcess() || !waitingIO.isEmpty() || !cfs.isEmpty()) /*&& i++ < 100*/);
+			++tick;			
+		} while(  (processor.hasRunningProcess() || !waitingIO.isEmpty() || !cfs.isEmpty()) /*&& i++ < 200*/);
 		
 		System.out.printf("We are winner\n");
 	}

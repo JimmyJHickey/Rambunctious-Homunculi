@@ -49,12 +49,19 @@ public class Processor
 				{
 					tempEntity = lockman.waitQueues.get(currentBurst.lock).poll();
 					
-					if(tempEntity != null) tempEntity.process.runnable = true;
+					if(tempEntity != null) 
+					{
+						tempEntity.process.runnable = true;
+					}
+					else
+					{
+						lockman.waitQueues.remove(currentBurst.lock);
+					}
 				}
 				
 				runningProcess.bursts.remove();
 				
-				// if the bursts are empty, the process is done
+				// if there are more bursts
 				if(!runningProcess.bursts.isEmpty())
 				{
 					currentBurst = runningProcess.bursts.peek();
@@ -68,6 +75,10 @@ public class Processor
 							{
 								preemptable = false;
 							}
+							else
+							{
+								lockman.waitQueues.put(new Character(currentBurst.lock), new LinkedList<SchedEntity>());
+							}							
 						}
 						else
 						{
@@ -90,7 +101,7 @@ public class Processor
 		runningProcess = proc;
 		runTime = 0;
 		
-		preemptable = !runningProcess.bursts.peek().criticalSection;
+		preemptable = !(runningProcess.bursts.peek().criticalSection && runningProcess.bursts.peek().length <= 2);
 	}
 	
 	public boolean removeProcess()

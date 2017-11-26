@@ -37,6 +37,22 @@ public class CompletelyFairScheduler
 		return nextTask;
 	}
 	
+	public boolean hasRunnableProcess()
+	{
+		boolean hasRunnable = false;
+		
+		for(SchedEntity se:rbTree)
+		{
+			if(se.process.runnable)
+			{
+				hasRunnable = true;
+				break;
+			}
+		}
+		
+		return hasRunnable;
+	}
+	
 	public int getTimeSlice()
 	{
 		timeSliceButNotReally = targetLat / (rbTree.size() +1);
