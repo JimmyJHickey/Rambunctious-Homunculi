@@ -188,6 +188,7 @@ public class Kernel
 					{
 						killListProc.add(proc);
 						cfs.schedOther(new SchedEntity(proc));
+						System.out.printf("Now enough memory for %s...scheduling\n", proc.name);
 					}
 				}
 				
