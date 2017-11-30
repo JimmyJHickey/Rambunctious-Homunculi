@@ -15,14 +15,14 @@ public class PageTable {
 			pageTable[i] = false;
 		}
 	}
+	
 	public int availableMem(){
 		int availablePages = 0;
 		for(int j = 0; j < pageTable.length; j++){
-			if (pageTable[j] = false){
+			if (!pageTable[j]){
 				availablePages++;
 			}
 		}
-		
 		return availablePages;
 	}
 	

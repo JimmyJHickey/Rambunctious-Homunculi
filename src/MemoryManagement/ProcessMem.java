@@ -11,7 +11,6 @@ public class ProcessMem {
 	public void initializeMem(int memSize){
 		memSize = (memSize * 1000)/4;
 		pageTable = new PageTable(memSize);
-		System.out.println(memSize);
 	}
 	
 	public int memAvailable(){
@@ -20,17 +19,14 @@ public class ProcessMem {
 	}
 	
 	public Process load(Process process){ // returns list of pages or empty list if no memory space
-		System.out.println("LOAD");
-		int pageAmt = (process.memory * 1000)/4;
-		System.out.println(pageAmt);
+		
+		int pageAmt = (process.memory / 4096) / 4;
 		if (pageAmt <= pageTable.availableMem()){
 			ArrayList<Page> pageList = new ArrayList<Page>();
 			Page page = new Page();
 			
 			for (int i = 0; i < pageAmt; i++){
 				page.pageNumber = pageTable.insert();
-				System.out.println(page.pageNumber);
-				System.out.println(pageTable.insert());
 				pageList.add(page);
 			}
 			
@@ -44,7 +40,7 @@ public class ProcessMem {
 	
 	public void unload(Process process){
 		
-		int pageAmt = (process.memory * 1000)/4;
+		int pageAmt = (process.memory  / 4096)/4;
 		
 		for (int i = 0; i < pageAmt; i++){
 			Page page = process.pages.get(i);
