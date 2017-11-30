@@ -140,10 +140,11 @@ public class Driver
 				// add the schedentity back into the schedule tree
 				cfs.schedOther(schedEnt);
 				
+				// don't move this print statement...
+				System.out.printf("put in waiting queue '%c'\n", schedEnt.process.bursts.peek().lock);
+				
 				lockedCriticalSection = false;
 				schedEnt = null;
-				
-				System.out.printf("put in waiting queue '%c'\n", schedEnt.process.bursts.peek().lock);
 			}
 			else if(schedEnt.process.bursts.isEmpty())
 			{
