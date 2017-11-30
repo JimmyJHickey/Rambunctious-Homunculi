@@ -8,7 +8,7 @@ import Process.SchedEntity;
 
 
 
-public class Driver 
+public class Kenel 
 {		
 	final private static int MIN_GRANULARITY = 2;
 	final private static int TARGET_LATANCY = 10;
