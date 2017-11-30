@@ -2,13 +2,14 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Queue;
 
+import MemoryManagement.ProcessMem;
 import Process.Process;
 import Process.Burst;
 import Process.SchedEntity;
 
 
 
-public class Driver 
+public class Kernel 
 {		
 	final private static int MIN_GRANULARITY = 2;
 	final private static int TARGET_LATANCY = 10;
@@ -24,11 +25,18 @@ public class Driver
 		int tick = 0;
 		
 		LockManager lckmgr = new LockManager();
+		
 		CompletelyFairScheduler cfs = new CompletelyFairScheduler(TARGET_LATANCY, MIN_GRANULARITY);
 		Processor processor = new Processor(lckmgr);
 		
+		ProcessMem memMan = new ProcessMem();
+		memMan.initializeMem(512);
+		
+		ArrayList<Process> onDeck = new ArrayList<Process>();
+		ArrayList<Process> killListProc = new ArrayList<Process>();
+		
 		SchedEntity schedEnt = null;
-		ArrayList<SchedEntity> killList = new ArrayList<SchedEntity>();
+		ArrayList<SchedEntity> killListSched = new ArrayList<SchedEntity>();
 		
 		boolean lockedCriticalSection = false;
 		boolean runnableProcess = false;
@@ -47,11 +55,26 @@ public class Driver
 			{
 				if(proc.arrivalTime == tick)
 				{
-					cfs.schedOther(new SchedEntity(proc));
+					memMan.load(proc);
 					
-					System.out.printf("Adding %s to the schedule tree\n", proc.name);
+					// if the process wasn't into memory
+					if(proc.pages.isEmpty())
+					{
+						onDeck.add(proc);
+						System.out.printf("Not enough memory for %s...putting on deck\n", proc.name);
+					}
+					else
+					{
+						cfs.schedOther(new SchedEntity(proc));
+						System.out.printf("Adding %s to the schedule tree\n", proc.name);
+					}
+					
+					killListProc.add(proc);
 				}
 			}
+			
+			processes.removeAll(killListProc);
+			killListProc.clear();
 			
 			// find processes in the waiting list that are done waiting, schedule them
 			for(SchedEntity se:waitingIO)
@@ -60,14 +83,14 @@ public class Driver
 				{
 					se.process.bursts.remove();
 					cfs.schedOther(se);
-					killList.add(se);
+					killListSched.add(se);
 					
 					System.out.printf("Moving %s out of the waiting queue\n", se.process.name);
 				}
 			}
 			
-			waitingIO.removeAll(killList);
-			killList.clear();
+			waitingIO.removeAll(killListSched);
+			killListSched.clear();
 			
 			// advance the time of all the io bursts in the waiting list
 			for(SchedEntity se:waitingIO)
@@ -99,7 +122,7 @@ public class Driver
 						}
 						else
 						{
-							killList.add(schedEnt);
+							killListSched.add(schedEnt);
 							
 							System.out.printf("\nprocess %s not runnable...", schedEnt.process.name);
 						}
@@ -112,11 +135,11 @@ public class Driver
 				}
 				
 				// add all of the not runnable processes back into the schedule tree
-				for(SchedEntity se:killList)
+				for(SchedEntity se:killListSched)
 				{
 					cfs.schedOther(se);
 				}
-				killList.clear();
+				killListSched.clear();
 				
 			}
 			else if(lockedCriticalSection)
@@ -140,19 +163,36 @@ public class Driver
 				// add the schedentity back into the schedule tree
 				cfs.schedOther(schedEnt);
 				
+				// don't move this print statement...
+				System.out.printf("put in waiting queue '%c'\n", schedEnt.process.bursts.peek().lock);
+				
 				lockedCriticalSection = false;
 				schedEnt = null;
-				
-				System.out.printf("put in waiting queue '%c'\n", schedEnt.process.bursts.peek().lock);
 			}
 			else if(schedEnt.process.bursts.isEmpty())
 			{
 				System.out.printf("%s finished processing...", schedEnt.process.name);
 				
 				processor.removeProcess();
+				memMan.unload(schedEnt.process);
 				schedEnt = null;
 				
 				System.out.printf("process reaped\n");
+				
+				// if there is now enough memory for a new process, schedule it
+				for(Process proc:onDeck)
+				{
+					memMan.load(proc);
+					
+					if(!proc.pages.isEmpty())
+					{
+						killListProc.add(proc);
+						cfs.schedOther(new SchedEntity(proc));
+					}
+				}
+				
+				onDeck.removeAll(killListProc);
+				killListProc.clear();
 			}
 			else if(!schedEnt.process.bursts.peek().cpuBurst)
 			{
@@ -225,3 +265,9 @@ public class Driver
 		System.out.printf("We are winner\n");
 	}
 }
+
+
+
+
+
+
