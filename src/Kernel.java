@@ -61,12 +61,13 @@ public class Kernel
 					if(proc.pages.isEmpty())
 					{
 						onDeck.add(proc);
-						System.out.printf("Not enough memory for %s...putting on deck\n", proc.name);
+						System.out.printf("Not enough memory for %s...put on deck\n", proc.name);
 					}
 					else
 					{
 						cfs.schedOther(new SchedEntity(proc));
-						System.out.printf("Adding %s to the schedule tree\n", proc.name);
+						System.out.printf("Allocated memory for %s...added to the schedule tree\n", proc.name);
+						System.out.printf("Memory: %d/%dKB\n", memMan.totalMemorySize() - memMan.memAvailable(), memMan.totalMemorySize());
 					}
 					
 					killListProc.add(proc);
@@ -249,7 +250,7 @@ public class Kernel
 					printer += String.format("Burst Time Remaining: %d\n", schedEnt.process.bursts.peek().length);
 					printer += String.format("%s\n", schedEnt.process.bursts.peek().criticalSection ? "Critical Section" : "Not Critical Section");
 					printer += String.format("Lock: %c\n", schedEnt.process.bursts.peek().lock);
-					printer += String.format("Memory: %d/%dKB\n", memMan.memAvailable(), memMan.totalMemorySize());
+					printer += String.format("Unallocated Memory: %d/%dKB\n", memMan.memAvailable(), memMan.totalMemorySize());
 				}
 				else
 				{
@@ -261,7 +262,7 @@ public class Kernel
 			System.out.printf("%s\n", printer);
 			
 			++tick;			
-		} while(  (processor.hasRunningProcess() || !waitingIO.isEmpty() || !cfs.isEmpty()) /*&& i++ < 200*/);
+		} while(  (processor.hasRunningProcess() || !waitingIO.isEmpty() || !cfs.isEmpty() || !onDeck.isEmpty()) && i++ < 200);
 		// while the processor is running a process, there are processes waiting for I/O, or there are processes in the schedule tree
 		
 		System.out.printf("We are winner\n");
