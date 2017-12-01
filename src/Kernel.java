@@ -11,39 +11,39 @@ import Process.SchedEntity;
 
 public class Kernel 
 {		
-	final private static int MIN_GRANULARITY = 2;
-	final private static int TARGET_LATANCY = 10;
-	
-	
-	public static void main(String args[])
+	public void runKernel(String dataFile, int memSizeKB, int minGran, int targetLat)
 	{
-		// get process list out of the csv
-		ArrayList<Process> processes = CSV.parseProcessCSV("data/processes1.csv");
-		ArrayList<SchedEntity> waitingIO = new ArrayList<SchedEntity>();
+		int minGranularity = minGran;
+		int targetLatancy = targetLat;
 		
-		// set up to run
-		int tick = 0;
-		
-		LockManager lckmgr = new LockManager();
-		
-		CompletelyFairScheduler cfs = new CompletelyFairScheduler(TARGET_LATANCY, MIN_GRANULARITY);
-		Processor processor = new Processor(lckmgr);
-		
-		ProcessMem memMan = new ProcessMem();
-		memMan.initializeMem(512 * 1024);
-		
+		// set up lists to hold processes
+		ArrayList<Process> processes = CSV.parseProcessCSV(dataFile);
 		ArrayList<Process> onDeck = new ArrayList<Process>();
 		ArrayList<Process> killListProc = new ArrayList<Process>();
 		
+		// set up lists to hold scheduleEntities
 		SchedEntity schedEnt = null;
+		ArrayList<SchedEntity> waitingIO = new ArrayList<SchedEntity>();
 		ArrayList<SchedEntity> killListSched = new ArrayList<SchedEntity>();
+		
+		
+		LockManager lckmgr = new LockManager();
+		
+		CompletelyFairScheduler cfs = new CompletelyFairScheduler(targetLatancy, minGranularity);
+		
+		Processor processor = new Processor(lckmgr);
+		
+		ProcessMem memMan = new ProcessMem();
+		memMan.initializeMem(memSizeKB);
+		System.out.printf("Initiliazing %dKB (%dMB) of memory\n\n", memSizeKB, memSizeKB/1024);
+		
+		// set up to run
+		int tick = 0;
 		
 		boolean lockedCriticalSection = false;
 		boolean runnableProcess = false;
 		
 		String printer = "";
-		
-		int i = 0;
 		
 		// the main event
 		do 
@@ -124,7 +124,6 @@ public class Kernel
 						else
 						{
 							killListSched.add(schedEnt);
-							
 							System.out.printf("\nprocess %s not runnable...", schedEnt.process.name);
 						}
 					}
@@ -250,7 +249,6 @@ public class Kernel
 					printer += String.format("Burst Time Remaining: %d\n", schedEnt.process.bursts.peek().length);
 					printer += String.format("%s\n", schedEnt.process.bursts.peek().criticalSection ? "Critical Section" : "Not Critical Section");
 					printer += String.format("Lock: %c\n", schedEnt.process.bursts.peek().lock);
-					printer += String.format("Unallocated Memory: %d/%dKB\n", memMan.memAvailable(), memMan.totalMemorySize());
 				}
 				else
 				{
@@ -259,10 +257,12 @@ public class Kernel
 			}
 			else printer += String.format("No process running\n");
 			
+			printer += String.format("Unallocated Memory: %d/%dKB\n", memMan.memAvailable(), memMan.totalMemorySize());
+			
 			System.out.printf("%s\n", printer);
 			
 			++tick;			
-		} while(  (processor.hasRunningProcess() || !waitingIO.isEmpty() || !cfs.isEmpty() || !onDeck.isEmpty()) && i++ < 200);
+		} while(processor.hasRunningProcess() || !waitingIO.isEmpty() || !cfs.isEmpty() || !onDeck.isEmpty());
 		// while the processor is running a process, there are processes waiting for I/O, or there are processes in the schedule tree
 		
 		System.out.printf("We are winner\n");
