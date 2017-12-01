@@ -27,9 +27,9 @@ public class ProcessMem {
 		int pageAmt = (process.memory / 1024) / 4;
 		if (pageAmt <= pageTable.availableMem()){
 			ArrayList<Page> pageList = new ArrayList<Page>();
-			Page page = new Page();
 			
 			for (int i = 0; i < pageAmt; i++){
+				Page page = new Page();
 				page.pageNumber = pageTable.insert();
 				pageList.add(page);
 			}
@@ -43,12 +43,8 @@ public class ProcessMem {
 	}
 	
 	public void unload(Process process){
-		
-		int pageAmt = (process.memory  / 1024)/4;
-		
-		for (int i = 0; i < pageAmt; i++){
-			Page page = process.pages.get(i);
-			pageTable.remove(page.pageNumber);
+		for(Page p:process.pages){
+			pageTable.remove(p.pageNumber);
 		}
 	}
 	
