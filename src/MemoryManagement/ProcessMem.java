@@ -14,7 +14,7 @@ public class ProcessMem {
 	}
 	
 	public int totalMemorySize(){
-		return (pageTable.totalMem()* 4) / 1000;
+		return (pageTable.totalMem()* 4);
 	}
 	
 	public int memAvailable(){
