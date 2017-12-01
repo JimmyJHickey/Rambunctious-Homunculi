@@ -13,6 +13,10 @@ public class ProcessMem {
 		pageTable = new PageTable(memSize);
 	}
 	
+	public int totalMemorySize(){
+		return (pageTable.totalMem()* 4) / 1000;
+	}
+	
 	public int memAvailable(){
 		int pages = pageTable.availableMem();
 		return (pages * 4)/1000; //return available memory in MB

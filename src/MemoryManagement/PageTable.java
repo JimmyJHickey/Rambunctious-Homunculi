@@ -16,6 +16,10 @@ public class PageTable {
 		}
 	}
 	
+	public int totalMem(){
+		return pageTable.length;
+	}
+	
 	public int availableMem(){
 		int availablePages = 0;
 		for(int j = 0; j < pageTable.length; j++){
