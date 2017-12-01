@@ -8,3 +8,5 @@ data/.~*#
 reports/~$*
 
 .idea/
+cmake-build-debug/
+
