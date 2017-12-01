@@ -30,7 +30,7 @@ public class Kernel
 		Processor processor = new Processor(lckmgr);
 		
 		ProcessMem memMan = new ProcessMem();
-		memMan.initializeMem(512);
+		memMan.initializeMem(512 * 1024);
 		
 		ArrayList<Process> onDeck = new ArrayList<Process>();
 		ArrayList<Process> killListProc = new ArrayList<Process>();
@@ -249,6 +249,7 @@ public class Kernel
 					printer += String.format("Burst Time Remaining: %d\n", schedEnt.process.bursts.peek().length);
 					printer += String.format("%s\n", schedEnt.process.bursts.peek().criticalSection ? "Critical Section" : "Not Critical Section");
 					printer += String.format("Lock: %c\n", schedEnt.process.bursts.peek().lock);
+					printer += String.format("Memory: %d/%dKB\n", memMan.memAvailable(), memMan.totalMemorySize());
 				}
 				else
 				{
