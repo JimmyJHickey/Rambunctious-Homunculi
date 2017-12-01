@@ -7,13 +7,15 @@ public class PageTable {
 	private boolean[] pageTable ;
 	
 	public PageTable(int availableMem){ // in MB
-		
-		int kbmem = availableMem * 1000; //convert from MB to KB
-		pageTable = new boolean[kbmem/4]; //divide by frame size
+		pageTable = new boolean[availableMem];
 		
 		for (int i = 0; i < pageTable.length; i++){
 			pageTable[i] = false;
 		}
+	}
+	
+	public int totalMem(){
+		return pageTable.length;
 	}
 	
 	public int availableMem(){
