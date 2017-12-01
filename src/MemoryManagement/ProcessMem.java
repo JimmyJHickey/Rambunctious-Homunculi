@@ -19,12 +19,12 @@ public class ProcessMem {
 	
 	public int memAvailable(){
 		int pages = pageTable.availableMem();
-		return (pages * 4); //return available memory in MB
+		return (pages * 4); //return available memory in KB
 	}
 	
 	public Process load(Process process){ // returns list of pages or empty list if no memory space
 		
-		int pageAmt = (process.memory / 4096) / 4;
+		int pageAmt = (process.memory / 1024) / 4;
 		if (pageAmt <= pageTable.availableMem()){
 			ArrayList<Page> pageList = new ArrayList<Page>();
 			Page page = new Page();
@@ -44,7 +44,7 @@ public class ProcessMem {
 	
 	public void unload(Process process){
 		
-		int pageAmt = (process.memory  / 4096)/4;
+		int pageAmt = (process.memory  / 1024)/4;
 		
 		for (int i = 0; i < pageAmt; i++){
 			Page page = process.pages.get(i);
