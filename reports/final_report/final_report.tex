@@ -214,7 +214,7 @@ If the process on the CPU is entering an IO burst, it is taken off of the proces
 
 If the process on the processor has been on the CPU longer than the current time slice, it is taken off of the CPU and placed back in the red-black tree. However, if the CPU is not currently preemptible because the current process is in a short critical section, the process runs for another tick. Further, if there is not another runnable process on the tree, the processes is not preempted and is allowed to run.
 
-Finally, if none of the above cases are met, the process continues to run for another tick.
+Finally, if none of the above cases are met, the process continues to run for another tick. 
 
 The loop of operations stops if all of the following conditions are met.
 
