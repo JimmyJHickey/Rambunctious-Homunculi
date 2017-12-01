@@ -9,7 +9,7 @@ public class ProcessMem {
 	private PageTable pageTable;
 	
 	public void initializeMem(int memSize){
-		memSize = (memSize * 1000)/4;
+		memSize = (memSize)/4;
 		pageTable = new PageTable(memSize);
 	}
 	
@@ -19,7 +19,7 @@ public class ProcessMem {
 	
 	public int memAvailable(){
 		int pages = pageTable.availableMem();
-		return (pages * 4)/1000; //return available memory in MB
+		return (pages * 4); //return available memory in MB
 	}
 	
 	public Process load(Process process){ // returns list of pages or empty list if no memory space
